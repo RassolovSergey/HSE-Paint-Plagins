@@ -9,11 +9,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
+using System.Reflection;
+using PluginInterface;
 
 namespace WinForms_v1
 {
     public partial class MainForm : Form
     {
+        // Словарь для хранения загруженных плагинов (по имени)
+        Dictionary<string, IPlugin> plugins = new Dictionary<string, IPlugin>(); 
+
         // Цвет кисти
         public static Color CurrentColor { get; set; }
         // Размер кисти
@@ -39,6 +44,9 @@ namespace WinForms_v1
 
             CurrentColor = Color.Black;
             CurrentWidth = 5;
+
+            FindPlugins();         // Поиск и загрузка плагинов
+            CreatePluginsMenu();   // Создание меню с пунктами для каждого плагина
         }
 
         // О Программе
@@ -106,7 +114,6 @@ namespace WinForms_v1
         {
             Application.Exit();
         }
-
 
         private void toolStripButton7_Click(object sender, EventArgs e)
         {
@@ -460,10 +467,74 @@ namespace WinForms_v1
             dockPanel.SaveAsXml(layoutFile);
         }
 
-        private void фильтрыToolStripMenuItem_Click(object sender, EventArgs e)
+
+        // Метод для поиска и загрузки плагинов из текущей директории
+        void FindPlugins()
         {
-            var Plugins = new FormPlugins();
-            Plugins.ShowDialog();
+            // Получение базовой директории приложения
+            string folder = System.AppDomain.CurrentDomain.BaseDirectory;
+
+            // Получение всех .dll-файлов в директории
+            string[] files = Directory.GetFiles(folder, "*.dll");
+
+            foreach (string file in files)
+                try
+                {
+                    // Загрузка сборки (библиотеки) из файла
+                    Assembly assembly = Assembly.LoadFile(file);
+
+                    // Поиск всех типов в сборке
+                    foreach (Type type in assembly.GetTypes())
+                    {
+                        // Проверка, реализует ли тип интерфейс IPlugin
+                        Type iface = type.GetInterface("PluginInterface.IPlugin");
+
+                        if (iface != null)
+                        {
+                            // Создание экземпляра плагина и добавление в словарь
+                            IPlugin plugin = (IPlugin)Activator.CreateInstance(type);
+                            plugins.Add(plugin.Name, plugin);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Отображение ошибки в случае неудачной загрузки плагина
+                    MessageBox.Show("Ошибка загрузки плагина\n" + ex.Message);
+                }
+        }
+
+        // Метод для создания меню плагинов на форме
+        private void CreatePluginsMenu()
+        {
+            foreach (var p in plugins)
+            {
+                // Добавление элемента в подменю "фильтры"
+                var item = фильтрыToolStripMenuItem.DropDownItems.Add(p.Value.Name);
+
+                // Подписка на событие клика по пункту меню
+                item.Click += OnPluginClick;
+            }
+        }
+
+        // Обработчик нажатия на пункт меню плагина
+        private void OnPluginClick(object sender, EventArgs e)
+        {
+            if (dockPanel.ActiveDocument is FormDocument activeDocument)
+            {
+                // Получаем имя плагина из текста пункта меню
+                string pluginName = ((ToolStripMenuItem)sender).Text;
+
+                // Проверяем, есть ли такой плагин
+                if (plugins.TryGetValue(pluginName, out IPlugin plugin))
+                {
+                    // Применяем плагин к изображению в активном документе
+                    plugin.PluginMethod(activeDocument.GetImage());
+
+                    // Обновляем отображение и сохраняем состояние
+                    activeDocument.UpdateAfterPlugin();
+                }
+            }
         }
     }
 }

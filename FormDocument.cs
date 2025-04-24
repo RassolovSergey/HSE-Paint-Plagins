@@ -34,7 +34,6 @@ namespace WinForms_v1
             SaveState(); // Сохраняем начальное состояние
         }
 
-
         public FormDocument(Bitmap bmp)
         {
             InitializeComponent();
@@ -146,8 +145,6 @@ namespace WinForms_v1
                 }
             }
         }
-
-
         public void LoadImage(Bitmap newBmp)
         {
             if (newBmp != null)
@@ -175,7 +172,6 @@ namespace WinForms_v1
                 e.Graphics.DrawImage(bmpTemp, new Rectangle(0, 0, newWidth, newHeight));
             }
         }
-
         public void Save()
         {
             if (string.IsNullOrEmpty(currentFilePath))
@@ -217,7 +213,6 @@ namespace WinForms_v1
         {
             bmp.Save(path, ImageFormat.Bmp);
         }
-
         private void SaveState()
         {
             // Добавляем текущее изображение в стек "Назад"
@@ -323,10 +318,25 @@ namespace WinForms_v1
                 }
             }
         }
+
+
         protected override void OnActivated(EventArgs e)
         {
             base.OnActivated(e);
             UpdateCursor();
         }
+
+        public Bitmap GetImage()
+        {
+            return bmp;
+        }
+
+        public void UpdateAfterPlugin()
+        {
+            bmpTemp = (Bitmap)bmp.Clone();
+            Invalidate();
+            SaveState();
+        }
+
     }
 }
