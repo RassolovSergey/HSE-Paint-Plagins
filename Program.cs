@@ -14,8 +14,13 @@ namespace WinForms_v1
         [STAThread]
         static void Main()
         {
+            // Включение визуальных стилей для приложения, чтобы использовать более современные элементы управления.
             Application.EnableVisualStyles();
+
+            // Устанавливаем параметр для совместимости с текстовым рендерингом по умолчанию. False означает использование стандартного рендеринга.
             Application.SetCompatibleTextRenderingDefault(false);
+
+            // Запуск основного окна формы приложения (MainForm), которое будет отображаться пользователю.
             Application.Run(new MainForm());
         }
     }
