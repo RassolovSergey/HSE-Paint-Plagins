@@ -1,12 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
 using System.Reflection;
@@ -341,7 +336,7 @@ namespace WinForms_v1
         }
 
 
-                                // ДОБАВЛЕНИЕ ИЗРБРАЖЕНИЙ
+        // ДОБАВЛЕНИЕ ИЗРБРАЖЕНИЙ
 
         // "Откарыть"
         // Обработчик события для открытия файла изображения
@@ -361,12 +356,21 @@ namespace WinForms_v1
                     {
                         // Загружаем выбранное изображение в объект Bitmap
                         Bitmap bmp = new Bitmap(openFileDialog.FileName);
-                        // Создаём новый экземпляр формы для отображения документа
-                        var doc = new FormDocument(bmp);
-                        // Устанавливаем родительскую форму для нового документа
-                        doc.MdiParent = this;
-                        // Показываем форму документа как дочернюю
-                        doc.Show();
+
+                        // Если нет активного документа или активный документ не является экземпляром FormDocument
+                        if (ActiveMdiChild == null || !(ActiveMdiChild is FormDocument))
+                        {
+                            var doc = new FormDocument(bmp);  // Создаём новый документ с изображением
+                            doc.MdiParent = this;             // Устанавливаем родительскую форму
+                            doc.Show();                       // Показываем форму документа как дочернюю
+                        }
+                        else
+                        {
+                            // Если активный документ уже существует, загружаем в него изображение
+                            var activeDoc = (FormDocument)ActiveMdiChild;
+                            activeDoc.LoadImage(bmp);  // Загружаем изображение в активный документ
+                            activeDoc.Invalidate();    // Обновляем отображение формы
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -376,6 +380,8 @@ namespace WinForms_v1
                 }
             }
         }
+
+
 
         // "Откарыть"
         // Обработчик события для открытия файла изображения (кнопка на панели инструментов)

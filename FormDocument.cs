@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using WeifenLuo.WinFormsUI.Docking;
+using System.IO;
 
 namespace WinForms_v1
 {
@@ -238,7 +234,6 @@ namespace WinForms_v1
             }
         }
 
-
         // Метод для отмены последнего действия (Undo)
         public void Undo()
         {
@@ -434,23 +429,30 @@ namespace WinForms_v1
         // Обработчик для события DragDrop
         private void FormDocument_DragDrop(object sender, DragEventArgs e)
         {
-            // Получаем путь к файлу, который был перетаскиваем
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-
-            // Если файл выбран, загружаем его в приложение
             if (files.Length > 0)
             {
-                try
-                {
-                    string filePath = files[0];
-                    Bitmap loadedImage = new Bitmap(filePath); // Загружаем изображение
+                string filePath = files[0];
 
-                    // Заменяем текущее изображение на загруженное
-                    this.LoadImage(loadedImage);
-                }
-                catch (Exception ex)
+                // Проверка на допустимые форматы изображений
+                string[] validExtensions = { ".jpg", ".jpeg", ".png", ".bmp" };
+                string extension = Path.GetExtension(filePath).ToLower();
+
+                if (Array.Exists(validExtensions, ext => ext == extension))
                 {
-                    MessageBox.Show("Ошибка при загрузке изображения: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    try
+                    {
+                        Bitmap loadedImage = new Bitmap(filePath);
+                        this.LoadImage(loadedImage);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Ошибка при загрузке изображения: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Недопустимый формат файла!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
         }
