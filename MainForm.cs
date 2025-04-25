@@ -233,30 +233,46 @@ namespace WinForms_v1
 
                                 // СОХАРНЕНИЕ
 
-        // Сохранить
-        // Обработчик события для сохранения текущего документа
-        private void SaveMenuItem_Click(object sender, EventArgs e)
+        private void SaveDoc()
         {
             // Проверяем, что активное дочернее окно является экземпляром FormDocument
             if (ActiveMdiChild is FormDocument doc)
             {
-                // Вызываем метод Save() для сохранения документа
+                // Сохраняем текущий документ
                 doc.Save();
             }
         }
 
-        // "Сохранить как..." - JPG
-        // Обработчик события для сохранения документа в формате JPG
-        private void SaveJPGMenuItem_Click(object sender, EventArgs e)
+        // "Сохранить" - Документ
+        // Обработчик события для сохранения текущего документа
+        private void сохранитьToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            // Проверяем, что активное дочернее окно является экземпляром FormDocument
+            SaveDoc();
+        }
+
+        // "Сохранить" - Документ
+        // Обработчик события для сохранения текущего документа (кнопка на панели инструментов)
+        private void saveToolStripButton_Click(object sender, EventArgs e)
+        {
+            SaveDoc();
+        }
+
+        // Сохранить
+        // Обработчик события для сохранения текущего документа
+        private void SaveMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveDoc();
+        }
+
+        private void SaveAs(string type)
+        {
             if (ActiveMdiChild is FormDocument doc)
             {
                 // Создаём диалоговое окно для сохранения файла
                 using (SaveFileDialog saveFileDialog = new SaveFileDialog())
                 {
                     // Устанавливаем фильтр для выбора только файлов .jpg
-                    saveFileDialog.Filter = "JPEG Files (*.jpg)|*.jpg";
+                    saveFileDialog.Filter = $"{type} Files (*.{type})|*.{type}";
                     // Показываем диалоговое окно и проверяем результат
                     if (saveFileDialog.ShowDialog() == DialogResult.OK)
                     {
@@ -267,80 +283,33 @@ namespace WinForms_v1
             }
         }
 
+        // "Сохранить как..." - JPG
+        // Обработчик события для сохранения документа в формате JPG
+        private void SaveJPGMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveAs("jpg");
+        }
+
         // "Сохранить как..." - BMP
         // Обработчик события для сохранения документа в формате BMP
         private void SaveBMPMenuItem_Click(object sender, EventArgs e)
         {
-            // Проверяем, что активное дочернее окно является экземпляром FormDocument
-            if (ActiveMdiChild is FormDocument doc)
-            {
-                // Создаём диалоговое окно для сохранения файла
-                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
-                {
-                    // Устанавливаем фильтр для выбора только файлов .bmp
-                    saveFileDialog.Filter = "Bitmap Files (*.bmp)|*.bmp";
-                    // Показываем диалоговое окно и проверяем результат
-                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                    {
-                        // Вызываем метод SaveAsBMP() для сохранения документа в формате BMP
-                        doc.SaveAsBMP(saveFileDialog.FileName);
-                    }
-                }
-            }
+            SaveAs("bmp");
         }
 
         // "Сохранить как..." - PNG
         // Обработчик события для сохранения документа в формате PNG
         private void изображениеВФорматеPNGToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Проверяем, что активное дочернее окно является экземпляром FormDocument
-            if (ActiveMdiChild is FormDocument doc)
-            {
-                // Создаём диалоговое окно для сохранения файла
-                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
-                {
-                    // Устанавливаем фильтр для выбора только файлов .png
-                    saveFileDialog.Filter = "PNG Files (*.png)|*.png";
-                    // Показываем диалоговое окно и проверяем результат
-                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                    {
-                        // Вызываем метод SaveAsPNG() для сохранения документа в формате PNG
-                        doc.SaveAsPNG(saveFileDialog.FileName);
-                    }
-                }
-            }
-        }
-
-        // "Сохранить" - Документ
-        // Обработчик события для сохранения текущего документа
-        private void сохранитьToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            // Проверяем, что активное дочернее окно является экземпляром FormDocument
-            if (ActiveMdiChild is FormDocument doc)
-            {
-                // Сохраняем текущий документ
-                doc.Save();
-            }
-        }
-
-        // "Сохранить" - Документ
-        // Обработчик события для сохранения текущего документа (кнопка на панели инструментов)
-        private void saveToolStripButton_Click(object sender, EventArgs e)
-        {
-            // Проверяем, что активное дочернее окно является экземпляром FormDocument
-            if (ActiveMdiChild is FormDocument doc)
-            {
-                // Сохраняем текущий документ
-                doc.Save();
-            }
+            SaveAs("png");
         }
 
 
-        // ДОБАВЛЕНИЕ ИЗРБРАЖЕНИЙ
 
-        // "Откарыть"
-        // Обработчик события для открытия файла изображения
-        private void открытьToolStripMenuItem_Click(object sender, EventArgs e)
+                                    // ОТКРЫТИЕ
+
+        // Метод открытия
+        private void OpenFiles()
         {
             // Создаём диалоговое окно для выбора файла изображения
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -357,7 +326,7 @@ namespace WinForms_v1
                         // Загружаем выбранное изображение в объект Bitmap
                         Bitmap bmp = new Bitmap(openFileDialog.FileName);
 
-                        // Если нет активного документа или активный документ не является экземпляром FormDocument
+                        // Если нет активного документа или активный документ не является FormDocument, создаём новый
                         if (ActiveMdiChild == null || !(ActiveMdiChild is FormDocument))
                         {
                             var doc = new FormDocument(bmp);  // Создаём новый документ с изображением
@@ -366,10 +335,9 @@ namespace WinForms_v1
                         }
                         else
                         {
-                            // Если активный документ уже существует, загружаем в него изображение
+                            // Если активен документ, то загружаем изображение в текущий документ
                             var activeDoc = (FormDocument)ActiveMdiChild;
-                            activeDoc.LoadImage(bmp);  // Загружаем изображение в активный документ
-                            activeDoc.Invalidate();    // Обновляем отображение формы
+                            activeDoc.LoadImage(bmp);
                         }
                     }
                     catch (Exception ex)
@@ -381,42 +349,25 @@ namespace WinForms_v1
             }
         }
 
+        // "Открыть"
+        // Обработчик события для открытия файла изображения
+        private void открытьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFiles();
+        }
 
-
-        // "Откарыть"
+        // "Открыть"
         // Обработчик события для открытия файла изображения (кнопка на панели инструментов)
         private void openToolStripButton_Click(object sender, EventArgs e)
         {
-            // Создаём диалоговое окно для выбора файла изображения
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.Filter = "Изображения|*.bmp;*.jpg;*.png";  // Устанавливаем фильтр для изображений
-                openFileDialog.Title = "Открыть изображение";  // Заголовок окна
-
-                // Показываем диалоговое окно и проверяем результат
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    try
-                    {
-                        // Загружаем выбранное изображение в объект Bitmap
-                        Bitmap bmp = new Bitmap(openFileDialog.FileName);
-                        // Создаём новый экземпляр формы для отображения документа
-                        var doc = new FormDocument(bmp);
-                        doc.MdiParent = this;  // Устанавливаем родительскую форму для нового документа
-                        doc.Show();  // Показываем форму документа как дочернюю
-                    }
-                    catch (Exception ex)
-                    {
-                        // Если возникла ошибка при загрузке изображения, выводим сообщение об ошибке
-                        MessageBox.Show("Ошибка загрузки изображения: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
+            OpenFiles();
         }
 
-        // "Импорт" - BMP
-        // Обработчик события для импорта файла BMP
-        private void импортироватьФайлBMPToolStripMenuItem_Click(object sender, EventArgs e)
+
+                                    // ИМПОРТ
+
+        // Метод Импорта
+        private void Imports(string type)
         {
             // Проверяем, что активное дочернее окно является экземпляром FormDocument
             if (ActiveMdiChild is FormDocument doc)
@@ -424,8 +375,8 @@ namespace WinForms_v1
                 // Создаём диалоговое окно для выбора файла BMP
                 using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
-                    openFileDialog.Filter = "BMP Files (*.bmp)|*.bmp";  // Устанавливаем фильтр для BMP файлов
-                    openFileDialog.Title = "Импортировать BMP";  // Заголовок окна
+                    openFileDialog.Filter = $"{type} Files (*.{type})|*.{type}";  // Устанавливаем фильтр для BMP файлов
+                    openFileDialog.Title = $"Импортировать {type}";  // Заголовок окна
 
                     // Показываем диалоговое окно и проверяем результат
                     if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -440,7 +391,7 @@ namespace WinForms_v1
                         catch (Exception ex)
                         {
                             // Если возникла ошибка при загрузке BMP, выводим сообщение об ошибке
-                            MessageBox.Show("Ошибка загрузки BMP: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show($"Ошибка загрузки {type}: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
@@ -450,46 +401,23 @@ namespace WinForms_v1
                 // Если нет активного документа, выводим предупреждение
                 MessageBox.Show("Нет активного документа для импорта!", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+        }
+
+        // "Импорт" - BMP
+        // Обработчик события для импорта файла BMP
+        private void импортироватьФайлBMPToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Imports("bmp");
         }
 
         // "Импорт" - JPG
         // Обработчик события для импорта файла JPG
         private void импортироватьФайлJPGToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Проверяем, что активное дочернее окно является экземпляром FormDocument
-            if (ActiveMdiChild is FormDocument doc)
-            {
-                // Создаём диалоговое окно для выбора файла JPG
-                using (OpenFileDialog openFileDialog = new OpenFileDialog())
-                {
-                    openFileDialog.Filter = "JPEG Files (*.jpg)|*.jpg";  // Устанавливаем фильтр для JPG файлов
-                    openFileDialog.Title = "Импортировать JPG";  // Заголовок окна
-
-                    // Показываем диалоговое окно и проверяем результат
-                    if (openFileDialog.ShowDialog() == DialogResult.OK)
-                    {
-                        try
-                        {
-                            // Загружаем выбранный JPG файл в объект Bitmap
-                            Bitmap bmp = new Bitmap(openFileDialog.FileName);
-                            // Загружаем изображение в документ
-                            doc.LoadImage(bmp);
-                        }
-                        catch (Exception ex)
-                        {
-                            // Если возникла ошибка при загрузке JPG, выводим сообщение об ошибке
-                            MessageBox.Show("Ошибка загрузки JPG: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // Если нет активного документа, выводим предупреждение
-                MessageBox.Show("Нет активного документа для импорта!", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
+            Imports("jpg");
         }
 
+                                   // СОЗДАНИЕ
 
         // "Создать"
         // Обработчик события для создания нового документа
@@ -503,48 +431,38 @@ namespace WinForms_v1
 
                                     // МАШТАБ
 
-        // Обработчик события для увеличения масштаба изображения на 10%
-        private void маштаб10ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ScaleMove(float size)
         {
             // Проверяем, что активное дочернее окно является экземпляром FormDocument
             if (ActiveMdiChild is FormDocument doc)
             {
                 // Увеличиваем масштаб изображения на 10%
-                doc.ScaleImage(1.1f);
+                doc.ScaleImage(size);
             }
+        }
+
+        // Обработчик события для увеличения масштаба изображения на 10%
+        private void маштаб10ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ScaleMove(1.1f);
         }
 
         // Обработчик события для уменьшения масштаба изображения на 10%
         private void маштаб10ToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            // Проверяем, что активное дочернее окно является экземпляром FormDocument
-            if (ActiveMdiChild is FormDocument doc)
-            {
-                // Уменьшаем масштаб изображения на 10%
-                doc.ScaleImage(0.9f);
-            }
+            ScaleMove(0.9f);
         }
 
         // Обработчик события для уменьшения масштаба изображения на 10% (кнопка на панели инструментов)
         private void toolStripButton11_Click(object sender, EventArgs e)
         {
-            // Проверяем, что активное дочернее окно является экземпляром FormDocument
-            if (ActiveMdiChild is FormDocument doc)
-            {
-                // Уменьшаем масштаб изображения на 10%
-                doc.ScaleImage(0.9f);
-            }
+            ScaleMove(0.9f);
         }
 
         // Обработчик события для увеличения масштаба изображения на 10% (кнопка на панели инструментов)
         private void toolStripButton12_Click(object sender, EventArgs e)
         {
-            // Проверяем, что активное дочернее окно является экземпляром FormDocument
-            if (ActiveMdiChild is FormDocument doc)
-            {
-                // Увеличиваем масштаб изображения на 10%
-                doc.ScaleImage(1.1f);
-            }
+            ScaleMove(1.1f);
         }
 
 
