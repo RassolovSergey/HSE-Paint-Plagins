@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
 using System.Reflection;
 using PluginInterface;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace WinForms_v1
 {
@@ -34,6 +35,7 @@ namespace WinForms_v1
 
         // Панель для отображения окон (документов), поддерживающая Dock-свойства.
         private DockPanel dockPanel;
+        private MenuStrip menuStrip;  // Это поле для вашего menuStrip
 
         // Конструктор формы MainForm
         public MainForm()
@@ -583,55 +585,67 @@ namespace WinForms_v1
         // Метод для поиска и загрузки плагинов из текущей директории
         void FindPlugins()
         {
-            // Получение базовой директории приложения
             string folder = System.AppDomain.CurrentDomain.BaseDirectory;
-
-            // Получение всех .dll-файлов в директории
             string[] files = Directory.GetFiles(folder, "*.dll");
 
             foreach (string file in files)
                 try
                 {
-                    // Загрузка сборки (библиотеки) из файла
                     Assembly assembly = Assembly.LoadFile(file);
-
-                    // Поиск всех типов в сборке
                     foreach (Type type in assembly.GetTypes())
                     {
-                        // Проверка, реализует ли тип интерфейс IPlugin
                         Type iface = type.GetInterface("PluginInterface.IPlugin");
-
                         if (iface != null)
                         {
-                            // Создание экземпляра плагина и добавление в словарь
                             IPlugin plugin = (IPlugin)Activator.CreateInstance(type);
                             plugins.Add(plugin.Name, plugin);
+                            // Создание пункта меню для каждого плагина
+                            var item = new ToolStripMenuItem(plugin.Name);
+                            item.Click += OnPluginClick;
+                            фильтрыToolStripMenuItem.DropDownItems.Add(item); // Добавляем в меню фильтров
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    // Отображение ошибки в случае неудачной загрузки плагина
                     MessageBox.Show("Ошибка загрузки плагина\n" + ex.Message);
                 }
         }
 
+
         // Метод для создания меню плагинов на форме
         private void CreatePluginsMenu()
         {
-            foreach (var p in plugins)
-            {
-                // Добавление элемента в подменю "фильтры"
-                var item = фильтрыToolStripMenuItem.DropDownItems.Add(p.Value.Name);
+            // Очистка подменю перед добавлением новых плагинов
+            фильтрыToolStripMenuItem.DropDownItems.Clear();
 
-                // Подписка на событие клика по пункту меню
+            // Добавляем новый пункт "Плагины" в меню фильтров
+            ToolStripMenuItem плагиныToolStripMenuItem = new ToolStripMenuItem("Плагины");
+
+            // Добавляем обработчик для клика на пункт "Плагины"
+            плагиныToolStripMenuItem.Click += плагиныToolStripMenuItem_Click;
+
+            // Добавляем пункт "Плагины" в подменю
+            фильтрыToolStripMenuItem.DropDownItems.Add(плагиныToolStripMenuItem);
+
+            // Проходим по всем плагинам и добавляем их в подменю "Плагины"
+            foreach (var plugin in plugins)
+            {
+                // Создаем новый пункт для каждого плагина
+                var item = new ToolStripMenuItem(plugin.Value.Name);
+
+                // Добавляем обработчик для каждого плагина
                 item.Click += OnPluginClick;
+
+                // Добавляем плагин в подменю
+                плагиныToolStripMenuItem.DropDownItems.Add(item);
             }
         }
 
 
 
-                                // НОВОЕ
+
+        // НОВОЕ
 
 
         // Обработчик для события DragEnter на DockPanel
@@ -667,6 +681,38 @@ namespace WinForms_v1
                 }
             }
         }
+        // В MainForm, где-то в месте инициализации (например, в конструкторе)
+        private void InitializePluginsButton()
+        {
+            var pluginsButton = new ToolStripButton("Плагины");
+            pluginsButton.Click += (sender, e) => ShowPluginsDialog();
+        }
 
+        // Метод для отображения окна с плагинами
+        private void ShowPluginsDialog()
+        {
+            var pluginsDialog = new PluginsDialog(dockPanel);  // Передаем dockPanel
+            pluginsDialog.ShowDialog();
+        }
+
+        private void плагиныToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ShowPluginsDialog();  // Открыть окно с плагинами
+        }
+        private void InitializePluginsMenu()
+        {
+            // Создаем родительский пункт меню "Инструменты"
+            ToolStripMenuItem toolsMenuItem = new ToolStripMenuItem("Инструменты");
+
+            // Создаем пункт меню "Плагины"
+            ToolStripMenuItem плагиныToolStripMenuItem = new ToolStripMenuItem("Плагины");
+            плагиныToolStripMenuItem.Click += плагиныToolStripMenuItem_Click;
+
+            // Добавляем пункт "Плагины" в подменю "Инструменты"
+            toolsMenuItem.DropDownItems.Add(плагиныToolStripMenuItem);
+
+            // Добавляем "Инструменты" в главное меню (предположим, что у вас есть menuStrip)
+            menuStrip.Items.Add(toolsMenuItem);
+        }
     }
 }
