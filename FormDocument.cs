@@ -30,14 +30,17 @@ namespace WinForms_v1
 
                             // КОНСТРУКТОРЫ
 
-        // Конструктор без параметров
+        // НОВОЕ
+        // Конструктор, который добавляет обработчики для перетаскивания
         public FormDocument()
         {
-            InitializeComponent(); // Инициализация компонентов формы
-            bmp = new Bitmap(ClientSize.Width, ClientSize.Height); // Инициализация изображения с размерами формы
-            bmpTemp = bmp;  // Устанавливаем временную копию на основное изображение
-            SaveState();    // Сохраняем начальное состояние изображения
+            InitializeComponent();
+            bmp = new Bitmap(ClientSize.Width, ClientSize.Height);  // Убедитесь, что bmp инициализирован
+            bmpTemp = bmp;  // Инициализируем bmpTemp с bmp
+            SaveState();  // Сохраняем начальное состояние изображения
         }
+
+
 
         // Конструктор с параметром Bitmap для загрузки уже существующего изображения
         public FormDocument(Bitmap bmp)
@@ -48,6 +51,7 @@ namespace WinForms_v1
             this.BackgroundImage = this.bmp;    // Устанавливаем изображение в качестве фона
             SaveState(); // Сохраняем начальное состояние
         }
+
 
 
                             // ОБРАБОТЧИКИ
@@ -217,16 +221,23 @@ namespace WinForms_v1
         }
 
 
-                        // СОСТОЯНИЕ ИЗОБРАЖЕНИЯ
+                            // СОСТОЯНИЕ ИЗОБРАЖЕНИЯ
 
         // Метод для сохранения состояния изображения (для Undo)
         private void SaveState()
         {
-            // Добавляем текущее изображение в стек "Назад"
-            undoStack.Push((Bitmap)bmp.Clone());
-            // При новом действии сбрасываем стек "Вперёд"
-            redoStack.Clear();
+            if (bmp != null)
+            {
+                undoStack.Push((Bitmap)bmp.Clone());  // Сохраняем текущее состояние изображения
+                redoStack.Clear();  // Очищаем стек "Вперёд"
+            }
+            else
+            {
+                // Обработка случая, если bmp не инициализирован
+                MessageBox.Show("Изображение не инициализировано!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
+
 
         // Метод для отмены последнего действия (Undo)
         public void Undo()
@@ -405,6 +416,44 @@ namespace WinForms_v1
             }
         }
 
+
+        // Обработчик для события DragEnter
+        private void FormDocument_DragEnter(object sender, DragEventArgs e)
+        {
+            // Проверяем, поддерживает ли перетаскиваемый объект изображение
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;  // Разрешаем копирование файла
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;  // Отменяем перетаскивание, если тип данных не поддерживается
+            }
+        }
+
+        // Обработчик для события DragDrop
+        private void FormDocument_DragDrop(object sender, DragEventArgs e)
+        {
+            // Получаем путь к файлу, который был перетаскиваем
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+            // Если файл выбран, загружаем его в приложение
+            if (files.Length > 0)
+            {
+                try
+                {
+                    string filePath = files[0];
+                    Bitmap loadedImage = new Bitmap(filePath); // Загружаем изображение
+
+                    // Заменяем текущее изображение на загруженное
+                    this.LoadImage(loadedImage);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при загрузке изображения: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
 
     }
 }

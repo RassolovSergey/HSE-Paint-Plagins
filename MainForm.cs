@@ -52,6 +52,12 @@ namespace WinForms_v1
             };
             Controls.Add(dockPanel);  // Добавляем панель в контролы формы
 
+            // НОВОЕ
+            // Разрешаем перетаскивание данных на DockPanel
+            dockPanel.AllowDrop = true;
+            dockPanel.DragEnter += new DragEventHandler(DockPanel_DragEnter);
+            dockPanel.DragDrop += new DragEventHandler(DockPanel_DragDrop);
+
             // Инициализация начальных значений для кисти
             CurrentColor = Color.Black; // Цвет кисти по умолчанию — чёрный
             CurrentWidth = 5;           // Размер кисти по умолчанию — 5px
@@ -696,6 +702,45 @@ namespace WinForms_v1
 
                 // Подписка на событие клика по пункту меню
                 item.Click += OnPluginClick;
+            }
+        }
+
+
+
+                                // НОВОЕ
+
+
+        // Обработчик для события DragEnter на DockPanel
+        private void DockPanel_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;  // Разрешаем копирование файла
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;  // Отменяем перетаскивание, если тип данных не поддерживается
+            }
+        }
+
+        // Обработчик для события DragDrop на DockPanel
+        private void DockPanel_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (files.Length > 0)
+            {
+                string filePath = files[0];
+                try
+                {
+                    Bitmap loadedImage = new Bitmap(filePath); // Загружаем изображение
+                    var doc = new FormDocument(loadedImage);    // Создаём новое окно документа с изображением
+                    doc.MdiParent = this; // Устанавливаем родителя для окна
+                    doc.Show(); // Показываем окно
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при загрузке изображения: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
